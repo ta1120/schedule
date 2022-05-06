@@ -37,5 +37,7 @@ namespace FinalExamScheduling.Model
                 Examiner = Examiner
             };
         }
+
+        public void setStudent(Student s) { Student = s; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using FinalExamScheduling.GeneticScheduling;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +14,47 @@ namespace FinalExamScheduling.Model
         public Schedule(int examCount)
         {
             FinalExams = new FinalExam[examCount];
+        }
+
+        public Schedule Clone()
+        {
+            return new Schedule(FinalExams.Length) 
+            {
+                FinalExams = FinalExams.Select(a => (FinalExam)a.Clone()).ToArray(),
+                Details = Details 
+            };
+        }
+
+        public bool Equals(Schedule other)
+        {
+            for(int i = 0; i < FinalExams.Length;i++)
+            {
+                if (!this.FinalExams[i].Student.Name.Equals(other.FinalExams[i].Student.Name))
+                {
+                    return false;
+                }
+                if (!this.FinalExams[i].Supervisor.Name.Equals(other.FinalExams[i].Supervisor.Name))
+                {
+                    return false;
+                }
+                if (!this.FinalExams[i].President.Name.Equals(other.FinalExams[i].President.Name))
+                {
+                    return false;
+                }
+                if (!this.FinalExams[i].Secretary.Name.Equals(other.FinalExams[i].Secretary.Name))
+                {
+                    return false;
+                }
+                if (!this.FinalExams[i].Member.Name.Equals(other.FinalExams[i].Member.Name))
+                {
+                    return false;
+                }
+                if (!this.FinalExams[i].Examiner.Name.Equals(other.FinalExams[i].Examiner.Name))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /*public string ToString(SchedulingFitness fitness)

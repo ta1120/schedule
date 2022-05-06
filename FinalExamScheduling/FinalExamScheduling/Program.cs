@@ -1,51 +1,69 @@
-﻿using FinalExamScheduling.HeuristicScheduling;
-using FinalExamScheduling.Model;
-using FinalExamScheduling.GeneticScheduling;
+﻿using FinalExamScheduling.Model;
+using FinalExamScheduling.TabuSearchScheduling;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalExamScheduling
 {
     public class Program
     {
-        static GeneticScheduler scheduler;
-        //static HeuristicScheduler heuristicScheduler;
+        static TabuSearchScheduler scheduler;
 
         static void Main(string[] args)
         {
-            RunGenetic();
-            //RunHeuristic();
-            //RunLP();
+            RunTabuSearch();
+            //RunGenetic();
 
+            /*
+            Console.WriteLine("Press Q to exit application.");
+            ConsoleKeyInfo key;
+            do {  key = Console.ReadKey();}
+            while(key.Key == ConsoleKey.Q);
+            System.Environment.Exit(0);
+            */
         }
 
-        /*
-        static void RunHeuristic()
+        //Based on the RunGenetic() function
+        static void RunTabuSearch()
         {
+            var watch = Stopwatch.StartNew();
             FileInfo existingFile = new FileInfo("Input.xlsx");
 
             var context = ExcelHelper.Read(existingFile);
-
             context.Init();
-            heuristicScheduler = new HeuristicScheduler(context);
-            Schedule schedule = heuristicScheduler.Run();
+            scheduler = new TabuSearchScheduler(context);
+            var task = scheduler.RunAsync().ContinueWith(scheduleTask =>
+            {
+                SolutionCandidate solution = scheduleTask.Result;
+                Schedule resultSchedule = solution.Schedule;   
+                double penaltyScore = solution.Score;
+                string elapsed = watch.Elapsed.ToString();
+                
+                Console.WriteLine("Best penalty score: " + penaltyScore);
 
-            context.FillDetails = true;
-            SchedulingFitness evaluator = new SchedulingFitness(context);
-            double penaltyScore = evaluator.EvaluateAll(schedule);
-            Console.WriteLine("Penalty score: " + penaltyScore);
+                string extraInfo = ("_" + TSParameters.Mode + "_" + penaltyScore);
 
-            scheduler = new GeneticScheduler(context);
-            ExcelHelper.Write(@"..\..\Results\Done_He_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + ".xlsx", schedule, context, scheduler.GetFinalScores(schedule, evaluator));
+                ExcelHelper.WriteTS(@"..\..\Results\Done_TS_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + extraInfo + ".xlsx", resultSchedule, context,  new CandidateCostCalculator(context).GetFinalScores(resultSchedule));
+            }
+            );
+
+            while (true)
+            {
+                if (task.IsCompleted)
+                    break;
+                var ch = Console.ReadKey();
+                if (ch.Key == ConsoleKey.A)
+                {
+                    scheduler.Cancel();
+                }
+                Console.WriteLine("Press A to Abort");
+            }
+            Console.WriteLine();
         }
-        */
 
+        /*
         static void RunGenetic()
         {
             var watch = Stopwatch.StartNew();
@@ -84,7 +102,6 @@ namespace FinalExamScheduling
             }
             Console.WriteLine();
         }
-
-
+        */
     }
 }
