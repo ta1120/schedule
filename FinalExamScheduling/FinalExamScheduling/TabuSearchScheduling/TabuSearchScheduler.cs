@@ -10,34 +10,23 @@ namespace FinalExamScheduling.TabuSearchScheduling
     class TabuSearchScheduler
     {
         private Context ctx;
-        private bool shouldTerminate = false;
+
 
         public TabuSearchScheduler(Context context)
         {
             ctx = context;
         }
-            
-        internal void Cancel()
-        {
-            shouldTerminate = true;
-        }
 
-        public Task<SolutionCandidate> RunAsync()
+        public SolutionCandidate Run(List<double> iterationProgress)
         {
             //Algorithm choice: later to be outsourced to class TSParameters
-            ITabuSearchAlgorithm tabuSearchAlgorithm = new TabuSearchWithVL(ctx);
-
-            return Task.Run<SolutionCandidate>(
-                () =>
-                {
-                    Console.WriteLine("TabuSearch running...");
+            TabuSearchWithVL tabuSearchAlgorithm = new TabuSearchWithVL(ctx);
+            
+                    if(TSParameters.PrintDetails)Console.WriteLine("TabuSearch running...");
                     
-                    var best = tabuSearchAlgorithm.Start();
+                    SolutionCandidate best = tabuSearchAlgorithm.Start(iterationProgress);
 
-                    return best;
-
-                });
-           
+            return best;
         }
     }
 }

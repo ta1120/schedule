@@ -2,6 +2,7 @@
 using FinalExamScheduling.TabuSearchScheduling;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -14,94 +15,77 @@ namespace FinalExamScheduling
         static void Main(string[] args)
         {
             RunTabuSearch();
-            //RunGenetic();
-
-            /*
-            Console.WriteLine("Press Q to exit application.");
-            ConsoleKeyInfo key;
-            do {  key = Console.ReadKey();}
-            while(key.Key == ConsoleKey.Q);
+            
+            Console.WriteLine("\nPress any key to exit...");
+            Console.ReadKey();
             System.Environment.Exit(0);
-            */
+            
         }
 
         //Based on the RunGenetic() function
         static void RunTabuSearch()
         {
+            double sum = 0;
+            int ctr = 0;
+
             var watch = Stopwatch.StartNew();
             FileInfo existingFile = new FileInfo("Input.xlsx");
 
             var context = ExcelHelper.Read(existingFile);
             context.Init();
             scheduler = new TabuSearchScheduler(context);
-            var task = scheduler.RunAsync().ContinueWith(scheduleTask =>
+            bool done = false;
+
+            List<double> iterationProgress = new List<double>();
+
+            SolutionCandidate solution = scheduler.Run(iterationProgress);
+            watch.Stop();
+            Schedule resultSchedule = solution.Schedule;   
+            double penaltyScore = solution.Score;
+
+            sum += solution.Score;
+            ctr++;
+
+            if(TSParameters.RestartUntilTargetReached)
             {
-                SolutionCandidate solution = scheduleTask.Result;
-                Schedule resultSchedule = solution.Schedule;   
-                double penaltyScore = solution.Score;
-                string elapsed = watch.Elapsed.ToString();
-                
-                Console.WriteLine("Best penalty score: " + penaltyScore);
-
-                string extraInfo = ("_" + TSParameters.Mode + "_" + penaltyScore);
-
-                ExcelHelper.WriteTS(@"..\..\Results\Done_TS_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + extraInfo + ".xlsx", resultSchedule, context,  new CandidateCostCalculator(context).GetFinalScores(resultSchedule));
-            }
-            );
-
-            while (true)
-            {
-                if (task.IsCompleted)
-                    break;
-                var ch = Console.ReadKey();
-                if (ch.Key == ConsoleKey.A)
+                while(solution.Score > TSParameters.TargetScore)
                 {
-                    scheduler.Cancel();
+                    if (TSParameters.PrintDetails) Console.WriteLine("Target not reached... Restarting search");
+                    if (TSParameters.PrintDetails) Console.WriteLine("#######################################");
+                    iterationProgress.Clear();
+                    watch.Restart();
+                    solution = scheduler.Run(iterationProgress);
+                    watch.Stop();
+                    resultSchedule = solution.Schedule;
+                    penaltyScore = solution.Score;
+
+                    sum += solution.Score;
+                    ctr++;
+
+                    double avg = Math.Round((sum / ctr), 2);
+                    if(!TSParameters.MuteConsoleUnlessDone) Console.WriteLine("@AVG " + avg + "\n");
+                    if (!TSParameters.MuteConsoleUnlessDone) Console.WriteLine("Best penalty score reached: " + penaltyScore);
+
+                    if (penaltyScore < 60)
+                    {
+                        string elapsed1 = watch.Elapsed.ToString();
+                        string extraInfo1 = ("_" + TSParameters.Mode + "_" + penaltyScore);
+
+                        ExcelHelper.WriteTS(@"..\..\Results\Done_TS_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + extraInfo1 + ".xlsx", resultSchedule, context, new CandidateCostCalculator(context).GetFinalScores(resultSchedule), iterationProgress, elapsed1);
+
+                    }
                 }
-                Console.WriteLine("Press A to Abort");
             }
-            Console.WriteLine();
+            string elapsed = watch.Elapsed.ToString();
+
+            Console.WriteLine("Best penalty score: " + penaltyScore);
+
+            //solution.VL.printViolations();
+
+            string extraInfo = ("_" + TSParameters.Mode + "_" + penaltyScore);
+
+            ExcelHelper.WriteTS(@"..\..\Results\Done_TS_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + extraInfo + ".xlsx", resultSchedule, context,  new CandidateCostCalculator(context).GetFinalScores(resultSchedule),iterationProgress,elapsed); 
+            Console.WriteLine("Done");
         }
-
-        /*
-        static void RunGenetic()
-        {
-            var watch = Stopwatch.StartNew();
-
-            FileInfo existingFile = new FileInfo("Input.xlsx");
-
-            var context = ExcelHelper.Read(existingFile);
-            context.Init();
-            scheduler = new GeneticScheduler(context);
-
-            var task = scheduler.RunAsync().ContinueWith(scheduleTask =>
-            {
-                Schedule resultSchedule = scheduleTask.Result;   
-
-                string elapsed = watch.Elapsed.ToString();
-
-                SchedulingFitness evaluator = new SchedulingFitness(context);
-                double penaltyScore = evaluator.EvaluateAll(resultSchedule);
-                Console.WriteLine("Penalty score: " + penaltyScore);
-
-                ExcelHelper.Write(@"..\..\Results\Done_Ge_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + penaltyScore + ".xlsx", scheduleTask.Result, elapsed, scheduler.GenerationFitness, scheduler.GetFinalScores(resultSchedule, scheduler.Fitness), context);
-
-            }
-            );
-
-            while (true)
-            {
-                if (task.IsCompleted)
-                    break;
-                var ch = Console.ReadKey();
-                if (ch.Key == ConsoleKey.A)
-                {
-                    scheduler.Cancel();
-                }
-                Console.WriteLine("Press A to Abort");
-            }
-            Console.WriteLine();
-        }
-        */
     }
 }

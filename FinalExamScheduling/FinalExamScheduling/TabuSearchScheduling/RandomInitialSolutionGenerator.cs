@@ -25,7 +25,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
             Schedule randomSchedule = new Schedule(examCount);
             bool[] studentUsed = new bool[examCount];
 
-            Console.WriteLine("Generating Random Initial Solution\n");
+            if (TSParameters.PrintDetails) Console.WriteLine("Generating Random Initial Solution\n");
 
             for (int i = 0; i < examCount; i++)
             {

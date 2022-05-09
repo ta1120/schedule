@@ -30,11 +30,11 @@ namespace FinalExamScheduling.TabuSearchScheduling
             Violations.Add(v);
         }
 
-        public void printViolations(SolutionCandidate s)
+        public void printViolations()
         {
-            if (s.VL == null) return;
+            if (this.Violations == null) return;
 
-            foreach(KeyValuePair<string, string> v in s.VL.Violations)
+            foreach(KeyValuePair<string, string> v in this.Violations)
             {
                 Console.WriteLine("Violation: " + v.Key + " - " + v.Value);
             }
@@ -57,22 +57,16 @@ namespace FinalExamScheduling.TabuSearchScheduling
                 GetSupervisorNotAvailableViolations,
 
                 GetPresidentChangeViolations,
-                GetSecretaryChangeViolations
-                /*
-                GetPresidentWorkloadWorstScore,
-                GetPresidentWorkloadWorseScore,
-                GetPresidentWorkloadBadScore,
-                GetSecretaryWorkloadWorstScore,
-                GetSecretaryWorkloadWorseScore,
-                GetSecretaryWorkloadBadScore,
-                GetMemberWorkloadWorstScore,
-                GetMemberWorkloadWorseScore,
-                GetMemberWorkloadBadScore,
-
-                GetPresidentSelfStudentScore,
-                GetSecretarySelfStudentScore,
-                GetExaminerNotPresidentScore
-                */
+                GetSecretaryChangeViolations,
+                
+                GetPresidentWorkloadViolations,
+                GetSecretaryWorkloadViolations,
+                GetMemberWorkloadViolations,
+                
+                GetSupervisorNotPresidentViolations,
+                GetSupervisorNotSecretaryViolations,
+                GetExaminerNotPresidentViolations
+                
            };
 
             var tasks = ViolationFunctions.Select(cf => Task.Run(() => cf(sch))).ToArray();
@@ -92,7 +86,8 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetWrongExaminerViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
-            for(int i = 0; i < sch.FinalExams.Length;i++)
+            if (!TSParameters.SolveWrongExaminer) return vl;
+            for (int i = 0; i < sch.FinalExams.Length;i++)
             {
                 if (!sch.FinalExams[i].Student.ExamCourse.Instructors.ToArray().Contains(sch.FinalExams[i].Examiner)) vl.AddViolation("wrongExaminer",i.ToString());
             }
@@ -102,6 +97,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetStudentDuplicatedViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveStudentDuplicated) return vl;
             List<Student> studentBefore = new List<Student>();
             int[] count = new int[100];
             foreach (var fe in sch.FinalExams)
@@ -121,6 +117,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetPresidentNotAvailableViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolvePresidentAvailability) return vl;
             for (int i = 0; i < sch.FinalExams.Length; i++)
             {
                 if (sch.FinalExams[i].President.Availability[i] == false)
@@ -134,6 +131,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetSecretaryNotAvailableViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveSecretaryAvailability) return vl;
             for (int i = 0; i < sch.FinalExams.Length; i++)
             {
                 if (sch.FinalExams[i].Secretary.Availability[i] == false)
@@ -147,6 +145,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetExaminerNotAvailableViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveExaminerAvailability) return vl;
             for (int i = 0; i < sch.FinalExams.Length; i++)
             {
                 if (sch.FinalExams[i].Examiner.Availability[i] == false)
@@ -160,6 +159,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetMemberNotAvailableViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveMemberAvailability) return vl;
             for (int i = 0; i < sch.FinalExams.Length; i++)
             {
                 if (sch.FinalExams[i].Member.Availability[i] == false)
@@ -173,6 +173,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetSupervisorNotAvailableViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveSupervisorAvailability) return vl;
             for (int i = 0; i < sch.FinalExams.Length; i++)
             {
                 if (sch.FinalExams[i].Supervisor.Availability[i] == false)
@@ -211,6 +212,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public ViolationList GetSecretaryChangeViolations(Schedule sch)
         {
             ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveSecretaryChange) return vl;
             for (int i = 0; i < sch.FinalExams.Length; i += 5)
             {
                 if (sch.FinalExams[i].Secretary != sch.FinalExams[i + 1].Secretary)
@@ -233,331 +235,197 @@ namespace FinalExamScheduling.TabuSearchScheduling
             return vl;
         }
 
-        /*
-        public ViolationList GetPresidentWorkloadWorstViolations(Schedule schedule)
-        {
-            double score = 0;
-            int[] presidentWorkloads = new int[ctx.Presidents.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                presidentWorkloads[Array.IndexOf(ctx.Presidents, fi.President)]++;
-            }
-
-            double optimalWorkload = 100 / ctx.Presidents.Length;
-
-            foreach (Instructor pres in ctx.Presidents)
-            {
-                if (presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] < optimalWorkload * 0.5)
-                {
-                    score += TS_Scores.PresidentWorkloadWorst;
-                }
-
-                if (presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] > optimalWorkload * 1.5)
-                {
-                    score += TS_Scores.PresidentWorkloadWorst;
-                }
-
-            }
-
-            return score;
-        }
        
-        public ViolationList GetPresidentWorkloadWorseViolations(Schedule schedule)
-        {
-            double score = 0;
-            int[] presidentWorkloads = new int[ctx.Presidents.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                presidentWorkloads[Array.IndexOf(ctx.Presidents, fi.President)]++;
-            }
-
-
-            double optimalWorkload = 100 / ctx.Presidents.Length;
-
-            foreach (Instructor pres in ctx.Presidents)
-            {
-
-                if (presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] < optimalWorkload * 0.7 && presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] >= optimalWorkload * 0.5)
-                {
-                    score += TS_Scores.PresidentWorkloadWorse;
-                }
-
-                if (presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] > optimalWorkload * 1.3 && presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] <= optimalWorkload * 1.5)
-                {
-                    score += TS_Scores.PresidentWorkloadWorse;
-                }
-
-            }
-
-            return score;
-        }
-
-        public ViolationList GetPresidentWorkloadBadViolations(Schedule schedule)
-        {
-            double score = 0;
-            int[] presidentWorkloads = new int[ctx.Presidents.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                presidentWorkloads[Array.IndexOf(ctx.Presidents, fi.President)]++;
-            }
-
-
-            double optimalWorkload = 100 / ctx.Presidents.Length;
-
-            foreach (Instructor pres in ctx.Presidents)
-            {
-
-                if (presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] < optimalWorkload * 0.9 && presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] >= optimalWorkload * 0.7)
-                {
-                    score += TS_Scores.PresidentWorkloadBad;
-                }
-
-                if (presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] > optimalWorkload * 1.1 && presidentWorkloads[Array.IndexOf(ctx.Presidents, pres)] <= optimalWorkload * 1.3)
-                {
-                    score += TS_Scores.PresidentWorkloadBad;
-                }
-            }
-
-            return score;
-        }
-
-        public ViolationList GetSecretaryWorkloadWorstViolations(Schedule schedule)
-        {
-            double score = 0;
-            int[] secretaryWorkloads = new int[ctx.Secretaries.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                secretaryWorkloads[Array.IndexOf(ctx.Secretaries, fi.Secretary)]++;
-            }
-
-            double optimalWorkload = 100 / ctx.Secretaries.Length;
-
-            foreach (Instructor secr in ctx.Secretaries)
-            {
-                if (secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] < optimalWorkload * 0.5)
-                {
-                    score += TS_Scores.SecretaryWorkloadWorst;
-                }
-
-                if (secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] > optimalWorkload * 1.5)
-                {
-                    score += TS_Scores.SecretaryWorkloadWorst;
-                }
-
-            }
-
-            return score;
-        }
-
-        public double GetSecretaryWorkloadWorseScore(Schedule schedule)
-        {
-            double score = 0;
-            int[] secretaryWorkloads = new int[ctx.Secretaries.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                secretaryWorkloads[Array.IndexOf(ctx.Secretaries, fi.Secretary)]++;
-            }
-
-
-            double optimalWorkload = 100 / ctx.Secretaries.Length;
-
-            foreach (Instructor secr in ctx.Secretaries)
-            {
-
-                if (secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] < optimalWorkload * 0.7 && secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] >= optimalWorkload * 0.5)
-                {
-                    score += TS_Scores.SecretaryWorkloadWorse;
-                }
-
-                if (secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] > optimalWorkload * 1.3 && secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] <= optimalWorkload * 1.5)
-                {
-                    score += TS_Scores.SecretaryWorkloadWorse;
-                }
-
-            }
-
-            return score;
-        }
-
-        public double GetSecretaryWorkloadBadScore(Schedule schedule)
-        {
-            double score = 0;
-            int[] secretaryWorkloads = new int[ctx.Secretaries.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                secretaryWorkloads[Array.IndexOf(ctx.Secretaries, fi.Secretary)]++;
-            }
-
-
-            double optimalWorkload = 100 / ctx.Secretaries.Length;
-
-            foreach (Instructor secr in ctx.Secretaries)
-            {
-
-                if (secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] < optimalWorkload * 0.9 && secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] >= optimalWorkload * 0.7)
-                {
-                    score += TS_Scores.SecretaryWorkloadBad;
-                }
-
-                if (secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] > optimalWorkload * 1.1 && secretaryWorkloads[Array.IndexOf(ctx.Secretaries, secr)] <= optimalWorkload * 1.3)
-                {
-                    score += TS_Scores.SecretaryWorkloadBad;
-                }
-            }
-
-            return score;
-        }
-
-        public double GetMemberWorkloadWorstScore(Schedule schedule)
-        {
-            double score = 0;
-            int[] memberWorkloads = new int[ctx.Members.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                memberWorkloads[Array.IndexOf(ctx.Members, fi.Member)]++;
-            }
-
-            double optimalWorkload = 100 / ctx.Members.Length;
-
-            foreach (Instructor memb in ctx.Members)
-            {
-                if (memberWorkloads[Array.IndexOf(ctx.Members, memb)] < optimalWorkload * 0.5)
-                {
-                    score += TS_Scores.MemberWorkloadWorst;
-                }
-
-                if (memberWorkloads[Array.IndexOf(ctx.Members, memb)] > optimalWorkload * 1.5)
-                {
-                    score += TS_Scores.MemberWorkloadWorst;
-                }
-
-            }
-
-            return score;
-        }
-
-        public double GetMemberWorkloadWorseScore(Schedule schedule)
-        {
-            double score = 0;
-            int[] memberWorkloads = new int[ctx.Members.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                memberWorkloads[Array.IndexOf(ctx.Members, fi.Member)]++;
-            }
-
-
-            double optimalWorkload = 100 / ctx.Members.Length;
-
-            foreach (Instructor memb in ctx.Members)
-            {
-
-                if (memberWorkloads[Array.IndexOf(ctx.Members, memb)] < optimalWorkload * 0.7 && memberWorkloads[Array.IndexOf(ctx.Members, memb)] >= optimalWorkload * 0.5)
-                {
-                    score += TS_Scores.MemberWorkloadWorse;
-                }
-
-                if (memberWorkloads[Array.IndexOf(ctx.Members, memb)] > optimalWorkload * 1.3 && memberWorkloads[Array.IndexOf(ctx.Members, memb)] <= optimalWorkload * 1.5)
-                {
-                    score += TS_Scores.MemberWorkloadWorse;
-                }
-
-            }
-
-            return score;
-        }
-
-        public double GetMemberWorkloadBadScore(Schedule schedule)
-        {
-            double score = 0;
-            int[] memberWorkloads = new int[ctx.Members.Length];
-
-            foreach (FinalExam fi in schedule.FinalExams)
-            {
-                memberWorkloads[Array.IndexOf(ctx.Members, fi.Member)]++;
-            }
-
-            double optimalWorkload = 100 / ctx.Members.Length;
-
-            foreach (Instructor memb in ctx.Members)
-            {
-
-                if (memberWorkloads[Array.IndexOf(ctx.Members, memb)] < optimalWorkload * 0.9 && memberWorkloads[Array.IndexOf(ctx.Members, memb)] >= optimalWorkload * 0.7)
-                {
-                    score += TS_Scores.MemberWorkloadBad;
-                }
-
-                if (memberWorkloads[Array.IndexOf(ctx.Members, memb)] > optimalWorkload * 1.1 && memberWorkloads[Array.IndexOf(ctx.Members, memb)] <= optimalWorkload * 1.3)
-                {
-                    score += TS_Scores.MemberWorkloadBad;
-                }
-            }
-            return score;
-        }
-        */
-
-        /*
-        public ViolationList GetPresidentSelfStudentScore(Schedule sch)
+        public ViolationList GetPresidentWorkloadViolations(Schedule schedule)
         {
             ViolationList vl = new ViolationList();
-            foreach (var fi in sch.FinalExams)
+            if (!TSParameters.SolvePresidentWorkload) return vl;
+            List<KeyValuePair<string, int>> workloads = new List<KeyValuePair<string, int>>();
+
+            foreach(FinalExam fe in schedule.FinalExams)
             {
+                bool found = false;
+                int oldValue = 0;
+                KeyValuePair<string,int> wlToBeRemoved = new KeyValuePair<string,int>();
+                foreach (KeyValuePair<string,int> wl in workloads)
+                {
+                    if(wl.Key.Equals(fe.President.Name))
+                    {
+                        found = true;
+                        oldValue = wl.Value;
+                        wlToBeRemoved = wl;
+                    }
+                }
+                if (!found)
+                {
+                    workloads.Add(new KeyValuePair<string, int>(fe.President.Name, 1));
+                }
+                else
+                {
+                    workloads.Remove(wlToBeRemoved);
+
+                    workloads.Add(new KeyValuePair<string, int>(fe.President.Name, (oldValue + 1)));
+                }
+            }
+            if(workloads.Count > 1)
+            {
+                KeyValuePair<string, int> max = workloads.ElementAt(0);
+                KeyValuePair<string, int> min = max;
+
+                for(int i = 1; i < workloads.Count;i++)
+                {
+                    KeyValuePair<string, int> wl = workloads.ElementAt(i);
+                    if (wl.Value < min.Value) min = wl;
+                    if (wl.Value > max.Value) max = wl;
+                }
+                if(!ReferenceEquals(min,max))vl.AddViolation("presidentWorkload",max.Key + ";" + max.Value + ";" + min.Key + ";" + min.Value);
+            }
+
+            return vl;
+        }
+
+        public ViolationList GetSecretaryWorkloadViolations(Schedule schedule)
+        {
+            ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveSecretaryWorkload) return vl;
+            List<KeyValuePair<string, int>> workloads = new List<KeyValuePair<string, int>>();
+
+            foreach (FinalExam fe in schedule.FinalExams)
+            {
+                bool found = false;
+                int oldValue = 0;
+                KeyValuePair<string, int> wlToBeRemoved = new KeyValuePair<string, int>();
+                foreach (KeyValuePair<string, int> wl in workloads)
+                {
+                    if (wl.Key.Equals(fe.Secretary.Name))
+                    {
+                        found = true;
+                        oldValue = wl.Value;
+                        wlToBeRemoved = wl;
+                    }
+                }
+                if (!found)
+                {
+                    workloads.Add(new KeyValuePair<string, int>(fe.Secretary.Name, 1));
+                }
+                else
+                {
+                    workloads.Remove(wlToBeRemoved);
+
+                    workloads.Add(new KeyValuePair<string, int>(fe.Secretary.Name, (oldValue + 1)));
+                }
+            }
+            if (workloads.Count > 1)
+            {
+                KeyValuePair<string, int> max = workloads.ElementAt(0);
+                KeyValuePair<string, int> min = max;
+
+                for (int i = 1; i < workloads.Count; i++)
+                {
+                    KeyValuePair<string, int> wl = workloads.ElementAt(i);
+                    if (wl.Value < min.Value) min = wl;
+                    if (wl.Value > max.Value) max = wl;
+                }
+                if (!ReferenceEquals(min, max)) vl.AddViolation("secretaryWorkload", max.Key + ";" + max.Value + ";" + min.Key + ";" + min.Value);
+            }
+
+            return vl;
+        }
+        public ViolationList GetMemberWorkloadViolations(Schedule schedule)
+        {
+            ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveMemberWorkload) return vl;
+            List<KeyValuePair<string, int>> workloads = new List<KeyValuePair<string, int>>();
+
+            foreach (FinalExam fe in schedule.FinalExams)
+            {
+                bool found = false;
+                int oldValue = 0;
+                KeyValuePair<string, int> wlToBeRemoved = new KeyValuePair<string, int>();
+                foreach (KeyValuePair<string, int> wl in workloads)
+                {
+                    if (wl.Key.Equals(fe.Member.Name))
+                    {
+                        found = true;
+                        oldValue = wl.Value;
+                        wlToBeRemoved = wl;
+                    }
+                }
+                if (!found)
+                {
+                    workloads.Add(new KeyValuePair<string, int>(fe.Member.Name, 1));
+                }
+                else
+                {
+                    workloads.Remove(wlToBeRemoved);
+
+                    workloads.Add(new KeyValuePair<string, int>(fe.Member.Name, (oldValue + 1)));
+                }
+            }
+            if (workloads.Count > 1)
+            {
+                KeyValuePair<string, int> max = workloads.ElementAt(0);
+                KeyValuePair<string, int> min = max;
+
+                for (int i = 1; i < workloads.Count; i++)
+                {
+                    KeyValuePair<string, int> wl = workloads.ElementAt(i);
+                    if (wl.Value < min.Value) min = wl;
+                    if (wl.Value > max.Value) max = wl;
+                }
+                if (!ReferenceEquals(min, max)) vl.AddViolation("memberWorkload", max.Key + ";" + max.Value + ";" + min.Key + ";" + min.Value);
+            }
+
+            return vl;
+        }
+        
+
+        
+        public ViolationList GetSupervisorNotPresidentViolations(Schedule sch)
+        {
+            ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveSupervisorNotPresident) return vl;
+            for (int i= 0; i < sch.FinalExams.Length; i++)
+            {
+                FinalExam fi = sch.FinalExams[i];
                 if ((fi.Supervisor.Roles & Roles.President) == Roles.President && fi.Supervisor != fi.President)
                 {
-                    score += TS_Scores.PresidentSelfStudent;
-                    if (ctx.FillDetails)
-                    {
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorComment += $"Not President: {TS_Scores.PresidentSelfStudent}\n";
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorScore += TS_Scores.PresidentSelfStudent;
-                    }
+                    vl.AddViolation("supervisorNotPresident", i.ToString());
                 }
             }
-            return score;
+            return vl;
         }
 
-        public double GetSecretarySelfStudentScore(Schedule sch)
+        public ViolationList GetSupervisorNotSecretaryViolations(Schedule sch)
         {
-            double score = 0;
-            foreach (var fi in sch.FinalExams)
+            ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveSupervisorNotSecretary) return vl;
+            for (int i = 0; i < sch.FinalExams.Length; i++)
             {
+                FinalExam fi = sch.FinalExams[i];
                 if ((fi.Supervisor.Roles & Roles.Secretary) == Roles.Secretary && fi.Supervisor != fi.Secretary)
                 {
-                    score += TS_Scores.SecretarySelfStudent;
-                    if (ctx.FillDetails)
-                    {
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorComment += $"Not Secretary: {TS_Scores.SecretarySelfStudent}\n";
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorScore += TS_Scores.SecretarySelfStudent;
-                    }
+                    vl.AddViolation("supervisorNotSecretary", i.ToString());
                 }
             }
-            return score;
+            return vl;
         }
 
-        public double GetExaminerNotPresidentScore(Schedule sch)
+        public ViolationList GetExaminerNotPresidentViolations(Schedule sch)
         {
-            double score = 0;
-            foreach (var fi in sch.FinalExams)
+            ViolationList vl = new ViolationList();
+            if (!TSParameters.SolveExaminerNotPresident) return vl;
+            for (int i = 0; i < sch.FinalExams.Length; i++)
             {
+                FinalExam fi = sch.FinalExams[i];
                 if ((fi.Examiner.Roles & Roles.President) == Roles.President && fi.Examiner != fi.President)
                 {
-                    score += TS_Scores.ExaminerNotPresident;
-                    if (ctx.FillDetails)
-                    {
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].ExaminerComment += $"Not President: {TS_Scores.ExaminerNotPresident}\n";
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].ExaminerScore += TS_Scores.ExaminerNotPresident;
-                    }
+                    vl.AddViolation("examinerNotPresident", i.ToString());
                 }
             }
-            return score;
+            return vl;
         }
-        */
+        
     }
 }
 

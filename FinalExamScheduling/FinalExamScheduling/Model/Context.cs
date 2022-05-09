@@ -35,9 +35,11 @@ namespace FinalExamScheduling.Model
             Secretaries = Instructors.Where(i => i.Roles.HasFlag(Roles.Secretary)).ToArray();
             Members = Instructors.Where(i => i.Roles.HasFlag(Roles.Member)).ToArray();
             RandStudents = Students.OrderBy(x => this.Rnd.Next()).ToArray();
+        }
 
-
-
+        public Instructor GetInstructorByName(string name)
+        {
+            return Instructors.FirstOrDefault(x => x.Name == name);
         }
 
         private void FillIDs(IEnumerable<Entity> entities)

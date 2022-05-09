@@ -85,7 +85,6 @@
     <Compile Include="Model\Student.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TabuSearchScheduling\ITabuSearchAlgorithm.cs" />
     <Compile Include="TabuSearchScheduling\NeighbourGeneratorWithVL.cs" />
     <Compile Include="TabuSearchScheduling\RandomInitialSolutionGenerator.cs" />
     <Compile Include="TabuSearchScheduling\TabuList.cs" />

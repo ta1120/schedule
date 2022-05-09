@@ -136,6 +136,112 @@ namespace FinalExamScheduling.TabuSearchScheduling
             {
                 neighbours[i] = new SolutionCandidate(current.Clone().Schedule);
 
+                //Trying to fix soft violations first
+                if(TSParameters.OptimizeSoftConstraints)
+                {
+                    foreach (KeyValuePair<string, string> v in VL.Violations)
+                    {
+                        if (v.Key.Equals("presidentWorkload"))
+                        {
+                            string[] data = v.Value.Split(';');
+                            KeyValuePair<string, int> max = new KeyValuePair<string, int>(data[0], int.Parse(data[1]));
+                            KeyValuePair<string, int> min = new KeyValuePair<string, int>(data[2], int.Parse(data[3]));
+                            int optimalWorkload = ctx.Students.Length / ctx.Presidents.Length;
+                            int maxToOptimal = max.Value - optimalWorkload;
+                            int minToOptimal = optimalWorkload - min.Value;
+                            int ctr = 0;
+                            int target = 0;
+                            if (maxToOptimal > 0 && maxToOptimal < minToOptimal)
+                            {
+                                target = maxToOptimal;
+                            }
+                            else if (minToOptimal > 0)
+                            {
+                                target = minToOptimal;
+                            }
+                            foreach (FinalExam fe in neighbours[i].Schedule.FinalExams)
+                            {
+                                if (ctr >= target) break;
+                                if (fe.President.Name.Equals(max.Key))
+                                {
+                                    fe.President = ctx.GetInstructorByName(min.Key);
+                                    ctr++;
+                                }
+                            }
+                        }
+                        else if (v.Key.Equals("secretaryWorkload"))
+                        {
+                            string[] data = v.Value.Split(';');
+                            KeyValuePair<string, int> max = new KeyValuePair<string, int>(data[0], int.Parse(data[1]));
+                            KeyValuePair<string, int> min = new KeyValuePair<string, int>(data[2], int.Parse(data[3]));
+                            int optimalWorkload = ctx.Students.Length / ctx.Secretaries.Length;
+                            int maxToOptimal = max.Value - optimalWorkload;
+                            int minToOptimal = optimalWorkload - min.Value;
+                            int ctr = 0;
+                            int target = 0;
+                            if (maxToOptimal > 0 && maxToOptimal < minToOptimal)
+                            {
+                                target = maxToOptimal;
+                            }
+                            else if (minToOptimal > 0)
+                            {
+                                target = minToOptimal;
+                            }
+                            foreach (FinalExam fe in neighbours[i].Schedule.FinalExams)
+                            {
+                                if (ctr >= target) break;
+                                if (fe.Secretary.Name.Equals(max.Key))
+                                {
+                                    fe.Secretary = ctx.GetInstructorByName(min.Key);
+                                    ctr++;
+                                }
+                            }
+                        }
+                        else if (v.Key.Equals("memberWorkload"))
+                        {
+                            string[] data = v.Value.Split(';');
+                            KeyValuePair<string, int> max = new KeyValuePair<string, int>(data[0], int.Parse(data[1]));
+                            KeyValuePair<string, int> min = new KeyValuePair<string, int>(data[2], int.Parse(data[3]));
+                            int optimalWorkload = ctx.Students.Length / ctx.Members.Length;
+                            int maxToOptimal = max.Value - optimalWorkload;
+                            int minToOptimal = optimalWorkload - min.Value;
+                            int ctr = 0;
+                            int target = 0;
+                            if (maxToOptimal > 0 && maxToOptimal < minToOptimal)
+                            {
+                                target = maxToOptimal;
+                            }
+                            else if (minToOptimal > 0)
+                            {
+                                target = minToOptimal;
+                            }
+                            foreach (FinalExam fe in neighbours[i].Schedule.FinalExams)
+                            {
+                                if (ctr >= target) break;
+                                if (fe.Member.Name.Equals(max.Key))
+                                {
+                                    fe.Member = ctx.GetInstructorByName(min.Key);
+                                    ctr++;
+                                }
+                            }
+                        }
+                        else if(v.Key.Equals("supervisorNotPresident"))
+                        {
+                            neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].President = neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Supervisor;
+                        }
+                        else if (v.Key.Equals("supervisorNotSecretary"))
+                        {
+                            neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Secretary = neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Supervisor;
+                        }
+                        else if (v.Key.Equals("examinerNotPresident"))
+                        {
+                            neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].President = neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Examiner;
+                        }
+                    }
+                
+                }
+
+                //Trying to fix hard violations after
                 foreach (KeyValuePair<string, string> v in VL.Violations)
                 {
                     if (v.Key.Equals("studentDuplicated") || v.Key.Equals("supervisorAvailability"))
@@ -195,7 +301,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
 
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value.Split(';')[0])].Secretary = ctx.Secretaries[x];
                     }
-                }
+                                    }
             }
             return neighbours;
         }

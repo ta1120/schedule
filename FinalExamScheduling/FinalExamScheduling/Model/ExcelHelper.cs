@@ -17,7 +17,7 @@ namespace FinalExamScheduling.Model
     public static class ExcelHelper
     {
         //Slightly modified version of the Write() function
-        public static void WriteTS(string p_strPath, Schedule sch, Context context, double[] finalScores)
+        public static void WriteTS(string p_strPath, Schedule sch, Context context, double[] finalScores, List<double> iterationalProgress,string elapsed)
         {
             using (ExcelPackage xlPackage_new = new ExcelPackage())
             {
@@ -104,6 +104,42 @@ namespace FinalExamScheduling.Model
 
 
                         row++;
+                    }
+                    row++;
+
+                    ws_info.Cells[row, 1].Value = "Time:";
+                    ws_info.Cells[row, 2].Value = elapsed;
+
+                    if (TSParameters.LogIterationalProgress)
+                    {
+                        int startingCol = 5;
+                        int rows = 1;
+
+                        ws_info.Cells[1, startingCol].Value = "Iterational Progress";
+                        foreach (double score in iterationalProgress)
+                        {
+                            
+                            ws_info.Cells[rows,startingCol+1].Value = rows-1;
+                            ws_info.Cells[rows,startingCol+2].Value = score;
+                            rows++;
+                        }
+                        rows--;
+
+                        ExcelLineChart lineChart = ws_info.Drawings.AddChart("lineChart", eChartType.Line) as ExcelLineChart;
+                        lineChart.Title.Text = "Iterational Score Progress";
+
+                        var iter = ws_info.Cells["F1:F" + rows];
+                        var scores = ws_info.Cells["G1:G" + rows];
+
+                        lineChart.Series.Add(scores, iter);
+
+                        //lineChart.Series[0].Header = ws_info.Cells["A1"].Text;
+
+                        lineChart.Legend.Remove();
+
+                        lineChart.SetSize(1450, 700);
+
+                        lineChart.SetPosition(0, 0, 3, 0);
                     }
 
                 }
