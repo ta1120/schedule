@@ -1,9 +1,6 @@
-﻿using System;
+﻿using FinalExamScheduling.Model;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FinalExamScheduling.Model;
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -58,7 +55,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
 
             while ((idleIterCounter < TSParameters.AllowedIdleIterations) || (TandemSearch && (tandemIdleRunCounter < TSParameters.TandemIdleSwitches)) || (TSParameters.AllowShuffleWhenStuck && shuffleCounter < TSParameters.MaxShuffles))
             {
-                if(TSParameters.AllowShuffleWhenStuck && idleIterCounter >= TSParameters.AllowedIdleIterations && shuffleCounter < TSParameters.MaxShuffles)
+                if (TSParameters.AllowShuffleWhenStuck && idleIterCounter >= TSParameters.AllowedIdleIterations && shuffleCounter < TSParameters.MaxShuffles)
                 {
                     current = ShuffleStudents(current).Clone();
                     shuffleCounter++;
@@ -240,9 +237,9 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public SolutionCandidate ShuffleStudents(SolutionCandidate current)
         {
             SolutionCandidate shuffled = current.Clone();
-            int shuffleCount = current.Schedule.FinalExams.Length * (TSParameters.ShufflePercentage/100);
+            int shuffleCount = current.Schedule.FinalExams.Length * (TSParameters.ShufflePercentage / 100);
             Random rand = new Random();
-            for(int i = 0; i < shuffleCount; i++)
+            for (int i = 0; i < shuffleCount; i++)
             {
                 int x = rand.Next(0, ctx.Students.Length);
                 int y = rand.Next(0, ctx.Students.Length);
@@ -263,7 +260,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         {
             CandidateCostCalculator ccc = new CandidateCostCalculator(ctx);
             SolutionCandidate best = null;
-            foreach(SolutionCandidate candidate in neighbours)
+            foreach (SolutionCandidate candidate in neighbours)
             {
                 if (best == null && IsFeasibleSolution(candidate))
                 {
@@ -271,7 +268,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
                     best = candidate.Clone();
                     //Console.WriteLine("Score: " + candidate.Score);
                 }
-                else if(IsFeasibleSolution(candidate))
+                else if (IsFeasibleSolution(candidate))
                 {
                     candidate.Score = ccc.Evaluate(candidate);
                     if (candidate.Score < best.Score) best = candidate.Clone();
@@ -307,16 +304,16 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public bool IsFeasibleSolution(SolutionCandidate solution)
         {
             FinalExam[] exams = solution.Schedule.FinalExams;
-            foreach(TabuListElement tabu in globalTabuList.GetTabuList())
+            foreach (TabuListElement tabu in globalTabuList.GetTabuList())
             {
-                if(tabu.TabuIterationsLeft > 0)
+                if (tabu.TabuIterationsLeft > 0)
                 {
                     switch (tabu.Attribute)
                     {
                         case "student":
                             for (int i = 0; i < exams.Length; i++)
                             {
-                                if(i == tabu.ExamSlot)
+                                if (i == tabu.ExamSlot)
                                 {
                                     if (exams[i].Student.Name.Equals(tabu.Value))
                                     {
@@ -395,7 +392,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public void ExpandTabuList(SolutionCandidate current, SolutionCandidate bestNeighbour)
         {
             int examCount = ctx.Students.Length;
-             
+
             for (int i = 0; i < examCount; i++)
             {
                 Schedule oldSchedule = current.Schedule.Clone();
@@ -403,7 +400,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
 
                 if (!oldSchedule.FinalExams[i].Student.Name.Equals(newSchedule.FinalExams[i].Student.Name))
                 {
-                    globalTabuList.Add(new TabuListElement("student", oldSchedule.FinalExams[i].Student.Name,i));
+                    globalTabuList.Add(new TabuListElement("student", oldSchedule.FinalExams[i].Student.Name, i));
                 }
                 if (!oldSchedule.FinalExams[i].Supervisor.Name.Equals(newSchedule.FinalExams[i].Supervisor.Name))
                 {

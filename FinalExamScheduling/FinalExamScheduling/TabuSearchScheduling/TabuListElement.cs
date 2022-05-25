@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FinalExamScheduling.TabuSearchScheduling
+﻿namespace FinalExamScheduling.TabuSearchScheduling
 {
     class TabuListElement
     {
@@ -13,7 +7,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public int TabuIterationsLeft;
         public int ExamSlot;
 
-        public TabuListElement(string attr, string value,int slot)
+        public TabuListElement(string attr, string value, int slot)
         {
             Attribute = attr;
             Value = value;

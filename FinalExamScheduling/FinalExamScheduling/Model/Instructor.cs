@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalExamScheduling.Model
 {
@@ -15,12 +11,12 @@ namespace FinalExamScheduling.Model
         Secretary = 4
     }
 
-    public class Instructor: Entity
+    public class Instructor : Entity
     {
         public string Name;
 
         public bool[] Availability;
         public Roles Roles;
-     
+
     }
 }

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using FinalExamScheduling.TabuSearchScheduling;
+﻿using FinalExamScheduling.TabuSearchScheduling;
 using OfficeOpenXml;
 using OfficeOpenXml.Drawing.Chart;
 using OfficeOpenXml.Style;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace FinalExamScheduling.Model
 {
@@ -17,7 +14,7 @@ namespace FinalExamScheduling.Model
     public static class ExcelHelper
     {
         //Slightly modified version of the Write() function
-        public static void WriteTS(string p_strPath, Schedule sch, Context context, double[] finalScores, List<double> iterationalProgress,string elapsed)
+        public static void WriteTS(string p_strPath, Schedule sch, Context context, double[] finalScores, List<double> iterationalProgress, string elapsed)
         {
             using (ExcelPackage xlPackage_new = new ExcelPackage())
             {
@@ -118,9 +115,9 @@ namespace FinalExamScheduling.Model
                         ws_info.Cells[1, startingCol].Value = "Iterational Progress";
                         foreach (double score in iterationalProgress)
                         {
-                            
-                            ws_info.Cells[rows,startingCol+1].Value = rows-1;
-                            ws_info.Cells[rows,startingCol+2].Value = score;
+
+                            ws_info.Cells[rows, startingCol + 1].Value = rows - 1;
+                            ws_info.Cells[rows, startingCol + 2].Value = score;
                             rows++;
                         }
                         rows--;

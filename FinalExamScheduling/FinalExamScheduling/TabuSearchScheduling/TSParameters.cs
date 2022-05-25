@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FinalExamScheduling.TabuSearchScheduling
+﻿namespace FinalExamScheduling.TabuSearchScheduling
 {
     class TSParameters
     {
-        
+
         //Switches
-        public const bool AllowShuffleWhenStuck = true;
+        public const bool AllowShuffleWhenStuck = false;
 
         public const bool MuteConsoleUnlessDone = false;
 
-        public const bool PrintDetails = true;
+        public const bool PrintDetails = false;
 
         public const bool OptimizeSoftConstraints = true;
 
-        public const bool RestartUntilTargetReached = false;
+        public const bool RestartUntilTargetReached = true;
 
         public const bool LogIterationalProgress = true;
 
@@ -42,15 +36,18 @@ namespace FinalExamScheduling.TabuSearchScheduling
         }
 
         //Other parameters
+
+        public const int WriteOutLimit = 80; //If scores under this are reached, the results will be written out to file. Set to negative value to write all results to file
+
         public const int MaxShuffles = 1;
 
         public const int ShufflePercentage = 20;
 
-        public const int GeneratedCandidates = 25; //200
+        public const int GeneratedCandidates = 25; //25
 
         public const int AllowedIdleIterations = 10; //10
 
-        public const double TargetScore = 0;
+        public const double TargetScore = 40; //40 is the best reachable score for the original input file
 
         public const bool GetInfo = true;
 

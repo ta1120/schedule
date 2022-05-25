@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FinalExamScheduling.TabuSearchScheduling
+﻿namespace FinalExamScheduling.TabuSearchScheduling
 {
     /*
      * 
@@ -16,7 +10,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
     {
         public const double WrongExaminer = 2000;
 
-        public const double StudentDuplicated = 10000;      
+        public const double StudentDuplicated = 10000;
 
         public const double PresidentNotAvailable = 1000;
         public const double SecretaryNotAvailable = 1000;
@@ -40,9 +34,19 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public const double MemberWorkloadWorse = 20;
         public const double MemberWorkloadBad = 10;
 
-        public const double PresidentSelfStudent = 2;
-        public const double SecretarySelfStudent = 1;
-        public const double ExaminerNotPresident = 1;
+        public const double SupervisorNotPresident = 2;
+        public const double SupervisorNotSecretary = 1;
+        public const double ExaminerNotPresident = 2;
+        /*
+        public const double ExaminerNotSecretary = 1;
+        public const double ExaminerNotMember = 1;
+        public const double SupervisorNotMember = 1;
+        public const double SupervisorNotExaminer = 1;
+        */
+
+        public const double PresidentIsSecretary = 5000;
+        public const double PresidentIsMember = 5000;
+        public const double SecretaryIsMember = 5000;
 
 
     }

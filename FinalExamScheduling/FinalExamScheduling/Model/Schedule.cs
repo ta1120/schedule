@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 
 namespace FinalExamScheduling.Model
@@ -18,16 +14,16 @@ namespace FinalExamScheduling.Model
 
         public Schedule Clone()
         {
-            return new Schedule(FinalExams.Length) 
+            return new Schedule(FinalExams.Length)
             {
                 FinalExams = FinalExams.Select(a => (FinalExam)a.Clone()).ToArray(),
-                Details = Details 
+                Details = Details
             };
         }
 
         public bool Equals(Schedule other)
         {
-            for(int i = 0; i < FinalExams.Length;i++)
+            for (int i = 0; i < FinalExams.Length; i++)
             {
                 if (!this.FinalExams[i].Student.Name.Equals(other.FinalExams[i].Student.Name))
                 {
@@ -71,6 +67,6 @@ namespace FinalExamScheduling.Model
             return sb.ToString();
         }*/
 
-        
+
     }
 }

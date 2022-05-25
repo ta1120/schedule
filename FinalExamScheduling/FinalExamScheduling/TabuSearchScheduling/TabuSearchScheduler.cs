@@ -1,9 +1,6 @@
 ﻿using FinalExamScheduling.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -21,10 +18,10 @@ namespace FinalExamScheduling.TabuSearchScheduling
         {
             //Algorithm choice: later to be outsourced to class TSParameters
             TabuSearchWithVL tabuSearchAlgorithm = new TabuSearchWithVL(ctx);
-            
-                    if(TSParameters.PrintDetails)Console.WriteLine("TabuSearch running...");
-                    
-                    SolutionCandidate best = tabuSearchAlgorithm.Start(iterationProgress);
+
+            if (TSParameters.PrintDetails) Console.WriteLine("TabuSearch running...");
+
+            SolutionCandidate best = tabuSearchAlgorithm.Start(iterationProgress);
 
             return best;
         }

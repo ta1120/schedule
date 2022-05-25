@@ -1,9 +1,7 @@
-﻿using System;
+﻿using FinalExamScheduling.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FinalExamScheduling.Model;
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -47,14 +45,14 @@ namespace FinalExamScheduling.TabuSearchScheduling
                     }
                     else if (v.Key.Equals("presidentAvailability"))
                     {
-                        
+
                         int x = rand.Next(0, ctx.Presidents.Length);
                         while (!ctx.Presidents[x].Availability[int.Parse(v.Value)])
                         {
                             x = rand.Next(0, ctx.Presidents.Length);
                         }
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].President = ctx.Presidents[x];
-                        
+
                     }
                     else if (v.Key.Equals("secretaryAvailability"))
                     {
@@ -76,7 +74,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
                             ctr++;
                         }
                         // If no eligible examiner is available at the time, switch 2 random students and go on
-                        if(ctr >= max)
+                        if (ctr >= max)
                         {
                             int index = int.Parse(v.Value);
                             int y = rand.Next(0, ctx.Students.Length);
@@ -118,6 +116,191 @@ namespace FinalExamScheduling.TabuSearchScheduling
                         neighbours[i].Schedule.FinalExams[feIndex].Secretary = neighbours[i].Schedule.FinalExams[feIndex + 1].Secretary;
                     }
                 }
+
+                //Trying to fix soft violations after
+                if (TSParameters.OptimizeSoftConstraints)
+                {
+                    foreach (KeyValuePair<string, string> v in VL.Violations)
+                    {
+                        if (v.Key.Equals("supervisorNotPresident"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while(x < ctx.Students.Length)
+                            {
+                                if(x != i && fe[x].President.Name.Equals(fe[eI].Supervisor.Name) && !fe[x].President.Name.Equals(fe[x].Supervisor.Name) && fe[x].President.Availability[x] && fe[x].Supervisor.Availability[eI] && fe[eI].Examiner.Availability[x] && fe[x].Examiner.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].Secretary = tempI.Secretary;
+                                    fe[eI].Member = tempI.Member;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }
+                        else if (v.Key.Equals("supervisorNotSecretary"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while (x < ctx.Students.Length)
+                            {
+                                if (x != i && fe[x].Secretary.Name.Equals(fe[eI].Supervisor.Name) && !fe[x].Secretary.Name.Equals(fe[x].Supervisor.Name) && fe[x].Secretary.Availability[x] && fe[x].Supervisor.Availability[eI] && fe[eI].Examiner.Availability[x] && fe[x].Examiner.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].President = tempI.President;
+                                    fe[eI].Member = tempI.Member;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }
+                        else if (v.Key.Equals("examinerNotPresident"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while (x < ctx.Students.Length)
+                            {
+                                if (x != i && fe[x].President.Name.Equals(fe[eI].Examiner.Name) && !fe[x].President.Name.Equals(fe[x].Examiner.Name) && fe[x].President.Availability[x] && fe[x].Examiner.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].Secretary = tempI.Secretary;
+                                    fe[eI].Member = tempI.Member;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }/*
+                        else if (v.Key.Equals("examinerNotSecretary"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while (x < ctx.Students.Length)
+                            {
+                                if (x != i && fe[x].Secretary.Name.Equals(fe[eI].Examiner.Name) && !fe[x].Secretary.Name.Equals(fe[x].Examiner.Name) && fe[x].Secretary.Availability[x] && fe[x].Examiner.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].President = tempI.President;
+                                    fe[eI].Member = tempI.Member;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }
+                        else if (v.Key.Equals("examinerNotMember"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while (x < ctx.Students.Length)
+                            {
+                                if (x != i && fe[x].Member.Name.Equals(fe[eI].Examiner.Name) && !fe[x].Member.Name.Equals(fe[x].Examiner.Name) && fe[x].Member.Availability[x] && fe[x].Examiner.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].Secretary = tempI.Secretary;
+                                    fe[eI].President = tempI.President;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }
+                        else if (v.Key.Equals("supervisorNotMember"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while (x < ctx.Students.Length)
+                            {
+                                if (x != i && fe[x].Member.Name.Equals(fe[eI].Supervisor.Name) && !fe[x].Member.Name.Equals(fe[x].Supervisor.Name) && fe[x].Member.Availability[x] && fe[x].Supervisor.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].Secretary = tempI.Secretary;
+                                    fe[eI].President = tempI.President;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }
+                        else if (v.Key.Equals("supervisorNotExaminer"))
+                        {
+                            int eI = int.Parse(v.Value);
+                            int x = 0;
+                            FinalExam[] fe = neighbours[i].Schedule.FinalExams;
+                            while (x < ctx.Students.Length)
+                            {
+                                if (x != i && fe[x].Supervisor.Name.Equals(fe[eI].Examiner.Name) && !fe[x].Supervisor.Name.Equals(fe[x].Examiner.Name) && fe[x].Supervisor.Availability[x] && fe[x].Examiner.Availability[eI])
+                                {
+
+                                    FinalExam tempI = fe[eI].Clone();
+                                    FinalExam tempX = fe[x].Clone();
+                                    fe[eI] = tempX.Clone();
+                                    fe[x] = tempI.Clone();
+
+                                    fe[eI].Secretary = tempI.Secretary;
+                                    fe[eI].Member = tempI.Member;
+                                    fe[eI].President = tempI.President;
+                                    fe[x].President = tempX.President;
+                                    fe[x].Secretary = tempX.Secretary;
+                                    fe[x].Member = tempI.Member;
+                                }
+
+                                x++;
+                            }
+                        }*/
+                    }
+                }
+
             }
             return neighbours;
         }
@@ -137,7 +320,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
                 neighbours[i] = new SolutionCandidate(current.Clone().Schedule);
 
                 //Trying to fix soft violations first
-                if(TSParameters.OptimizeSoftConstraints)
+                if (TSParameters.OptimizeSoftConstraints)
                 {
                     foreach (KeyValuePair<string, string> v in VL.Violations)
                     {
@@ -225,20 +408,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
                                 }
                             }
                         }
-                        else if(v.Key.Equals("supervisorNotPresident"))
-                        {
-                            neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].President = neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Supervisor;
-                        }
-                        else if (v.Key.Equals("supervisorNotSecretary"))
-                        {
-                            neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Secretary = neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Supervisor;
-                        }
-                        else if (v.Key.Equals("examinerNotPresident"))
-                        {
-                            neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].President = neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Examiner;
-                        }
                     }
-                
                 }
 
                 //Trying to fix hard violations after
@@ -260,28 +430,28 @@ namespace FinalExamScheduling.TabuSearchScheduling
                     }
                     else if (v.Key.Equals("presidentAvailability"))
                     {
-                        
+
                         int x = rand.Next(0, ctx.Presidents.Length);
-                        
+
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].President = ctx.Presidents[x];
-                        
+
                     }
                     else if (v.Key.Equals("secretaryAvailability"))
                     {
                         int x = rand.Next(0, ctx.Secretaries.Length);
-                        
+
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Secretary = ctx.Secretaries[x];
                     }
                     else if (v.Key.Equals("examinerAvailability") || v.Key.Equals("wrongExaminer"))
                     {
                         int x = rand.Next(0, ctx.Instructors.Length);
-                        
+
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Examiner = ctx.Instructors[x];
                     }
                     else if (v.Key.Equals("memberAvailability"))
                     {
                         int x = rand.Next(0, ctx.Members.Length);
-                        
+
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value)].Member = ctx.Members[x];
                     }
 
@@ -301,7 +471,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
 
                         neighbours[i].Schedule.FinalExams[int.Parse(v.Value.Split(';')[0])].Secretary = ctx.Secretaries[x];
                     }
-                                    }
+                }
             }
             return neighbours;
         }

@@ -1,9 +1,5 @@
 ﻿using FinalExamScheduling.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -30,7 +26,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
             for (int i = 0; i < examCount; i++)
             {
                 randomSchedule.FinalExams[i] = new FinalExam();
-                
+
                 int x = rnd.Next(0, ctx.Students.Length);
                 while (studentUsed[x] /*|| !ctx.Students[x].Supervisor.Availability[i]*/) x = rnd.Next(0, ctx.Students.Length);
 

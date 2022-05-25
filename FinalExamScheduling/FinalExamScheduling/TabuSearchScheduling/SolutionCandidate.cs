@@ -1,10 +1,4 @@
 ﻿using FinalExamScheduling.Model;
-using FinalExamScheduling.TabuSearchScheduling;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -24,7 +18,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
 
         public SolutionCandidate Clone()
         {
-            return new SolutionCandidate(Schedule.Clone()) { VL = VL, Score = Score};
+            return new SolutionCandidate(Schedule.Clone()) { VL = VL, Score = Score };
         }
 
     }

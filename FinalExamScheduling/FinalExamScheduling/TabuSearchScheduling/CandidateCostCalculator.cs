@@ -1,9 +1,8 @@
-﻿using System;
+﻿using FinalExamScheduling.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using FinalExamScheduling.Model; 
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -46,9 +45,19 @@ namespace FinalExamScheduling.TabuSearchScheduling
                 GetMemberWorkloadWorseScore,
                 GetMemberWorkloadBadScore,
 
-                GetPresidentSelfStudentScore,
-                GetSecretarySelfStudentScore,
-                GetExaminerNotPresidentScore
+                GetSupervisorNotPresidentScore,
+                GetSupervisorNotSecretaryScore,
+                GetExaminerNotPresidentScore,
+                /*               
+                GetExaminerNotSecretaryScore,
+                GetExaminerNotMemberScore,
+                GetSupervisorNotMemberScore,
+                GetSupervisorNotExaminerScore,
+                */
+
+                GetPresidentIsSecretaryScore,
+                GetPresidentIsMemberScore,
+                GetSecretaryIsMemberScore
 
            };
         }
@@ -569,36 +578,36 @@ namespace FinalExamScheduling.TabuSearchScheduling
             return score;
         }
 
-        public double GetPresidentSelfStudentScore(Schedule sch)
+        public double GetSupervisorNotPresidentScore(Schedule sch)
         {
             double score = 0;
             foreach (var fi in sch.FinalExams)
             {
                 if ((fi.Supervisor.Roles & Roles.President) == Roles.President && fi.Supervisor != fi.President)
                 {
-                    score += TS_Scores.PresidentSelfStudent;
+                    score += TS_Scores.SupervisorNotPresident;
                     if (ctx.FillDetails)
                     {
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorComment += $"Not President: {TS_Scores.PresidentSelfStudent}\n";
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorScore += TS_Scores.PresidentSelfStudent;
+                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorComment += $"Not President: {TS_Scores.SupervisorNotPresident}\n";
+                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorScore += TS_Scores.SupervisorNotPresident;
                     }
                 }
             }
             return score;
         }
 
-        public double GetSecretarySelfStudentScore(Schedule sch)
+        public double GetSupervisorNotSecretaryScore(Schedule sch)
         {
             double score = 0;
             foreach (var fi in sch.FinalExams)
             {
                 if ((fi.Supervisor.Roles & Roles.Secretary) == Roles.Secretary && fi.Supervisor != fi.Secretary)
                 {
-                    score += TS_Scores.SecretarySelfStudent;
+                    score += TS_Scores.SupervisorNotSecretary;
                     if (ctx.FillDetails)
                     {
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorComment += $"Not Secretary: {TS_Scores.SecretarySelfStudent}\n";
-                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorScore += TS_Scores.SecretarySelfStudent;
+                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorComment += $"Not Secretary: {TS_Scores.SupervisorNotSecretary}\n";
+                        sch.Details[Array.IndexOf(sch.FinalExams, fi)].SupervisorScore += TS_Scores.SupervisorNotSecretary;
                     }
                 }
             }
@@ -620,6 +629,94 @@ namespace FinalExamScheduling.TabuSearchScheduling
                     }
                 }
             }
+            return score;
+        }
+        /*
+        public double GetExaminerNotSecretaryScore(Schedule sch)
+        {
+            double score = 0;
+            foreach (var fi in sch.FinalExams)
+            {
+                if ((fi.Examiner.Roles & Roles.Secretary) == Roles.Secretary && fi.Examiner != fi.Secretary)
+                {
+                    score += TS_Scores.ExaminerNotSecretary;
+                }
+            }
+            return score;
+        }
+
+        public double GetExaminerNotMemberScore(Schedule sch)
+        {
+            double score = 0;
+            foreach (var fi in sch.FinalExams)
+            {
+                if ((fi.Examiner.Roles & Roles.Member) == Roles.Member && fi.Examiner != fi.Member)
+                {
+                    score += TS_Scores.ExaminerNotMember;
+                }
+            }
+            return score;
+        }
+
+        public double GetSupervisorNotMemberScore(Schedule sch)
+        {
+            double score = 0;
+            foreach (var fi in sch.FinalExams)
+            {
+                if ((fi.Supervisor.Roles & Roles.Member) == Roles.Member && fi.Supervisor != fi.Member)
+                {
+                    score += TS_Scores.SupervisorNotMember;
+                }
+            }
+            return score;
+        }
+
+        public double GetSupervisorNotExaminerScore(Schedule sch)
+        {
+            double score = 0;
+            foreach (var fi in sch.FinalExams)
+            {
+                if (fi.Student.ExamCourse.Instructors.Contains(fi.Supervisor) && fi.Supervisor != fi.Examiner)
+                {
+                    score += TS_Scores.SupervisorNotExaminer;
+                }
+            }
+            return score;
+        }
+        */
+        public double GetPresidentIsSecretaryScore(Schedule schedule)
+        {
+            double score = 0;
+
+            foreach (FinalExam fi in schedule.FinalExams)
+            {
+                if (fi.President.Name.Equals(fi.Secretary.Name)) score += TS_Scores.PresidentIsSecretary;
+            }
+
+            return score;
+        }
+
+        public double GetPresidentIsMemberScore(Schedule schedule)
+        {
+            double score = 0;
+
+            foreach (FinalExam fi in schedule.FinalExams)
+            {
+                if (fi.President.Name.Equals(fi.Member.Name)) score += TS_Scores.PresidentIsMember;
+            }
+
+            return score;
+        }
+
+        public double GetSecretaryIsMemberScore(Schedule schedule)
+        {
+            double score = 0;
+
+            foreach (FinalExam fi in schedule.FinalExams)
+            {
+                if (fi.Secretary.Name.Equals(fi.Member.Name)) score += TS_Scores.SecretaryIsMember;
+            }
+
             return score;
         }
     }

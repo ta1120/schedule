@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalExamScheduling.TabuSearchScheduling
 {
@@ -11,9 +9,9 @@ namespace FinalExamScheduling.TabuSearchScheduling
         public List<TabuListElement> tabuList;
         public int listLength;
 
-        public TabuList() 
-        { 
-            switch(TSParameters.Mode)
+        public TabuList()
+        {
+            switch (TSParameters.Mode)
             {
                 case "Random":
                     listLength = TSParameters.Random.TabuListLength;
@@ -25,7 +23,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
                     listLength = TSParameters.Greedy.TabuListLength;
                     break;
             }
-            
+
             tabuList = new List<TabuListElement>();
         }
 
@@ -52,7 +50,7 @@ namespace FinalExamScheduling.TabuSearchScheduling
 
         public void DecreaseIterationsLeft()
         {
-            if(tabuList.Count > 0)
+            if (tabuList.Count > 0)
             {
                 foreach (TabuListElement element in tabuList) element.TabuIterationsLeft -= 1;
                 //TODO: remove elements reaching 0
@@ -64,11 +62,11 @@ namespace FinalExamScheduling.TabuSearchScheduling
         {
             List<TabuListElement> toBeRemoved = new List<TabuListElement>();
 
-            foreach(TabuListElement tabu in tabuList)
+            foreach (TabuListElement tabu in tabuList)
             {
                 if (tabu.TabuIterationsLeft < 1) toBeRemoved.Add(tabu);
             }
-            foreach(TabuListElement tabu in toBeRemoved)
+            foreach (TabuListElement tabu in toBeRemoved)
             {
                 tabuList.Remove(tabu);
             }
